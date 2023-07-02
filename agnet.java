@@ -3,19 +3,24 @@ package bank;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
 
+import com.mysql.cj.xdevapi.Result;
+
 public class agnet {
 
-	static Scanner user = new Scanner(System.in);
-	static Scanner password = new Scanner(System.in);
+	
 	static Scanner name = new Scanner(System.in);
-	static Scanner genders = new Scanner(System.in);
-	static Scanner userN = new Scanner(System.in);
+	
 	static Scanner choisee = new Scanner(System.in);
 	static Scanner Number = new Scanner(System.in);
 
@@ -29,277 +34,279 @@ public class agnet {
 		System.out.println(
 				"---------------------------------------------Welcome on Programme of Bank------------------------------------------------------------");
 
+		String url = "jdbc:mysql://localhost:3306/bank";
+		String username = "root";
+		String password = "Holag12x@";
+		String query = "SELECT * FROM bankinfo";
+
 		System.out.println("For Registion on System type 1:");
 		System.out.println("For Connction to Your Account type 2:");
 
 		int choise = user.nextInt();
-		if(choise == 1) {
+		if (choise == 1) {
 
-			System.out.println("Please Username:");
-
-			String fullname = name.nextLine();
-
-			File name = new File("C:\\Users\\user\\Desktop\\fullname.txt");
-
-			FileWriter full = new FileWriter(name,true);
-
-			PrintWriter printname = new PrintWriter(full);
-
-			printname.println(fullname);
-			printname.close();
-
-			System.out.println("What is Your Gender:");
-			System.out.println("1-Male");
-			System.out.println("2-Female");
-
-			int gender = genders.nextInt();
-
-			int male = 1;
-			int female = 2;
-
-			if (gender == 1) {
-				System.out.println("Welcome Mr." + fullname);
-
-			} else if (gender == 2) {
-				System.out.println("Welcome Mrs." + fullname);
-			} else {
-				System.out.println("I'm Sorry Try Again!!");
+			try {
+				Class.forName("com.mysql.cj.jdbc.Driver");
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+				return;
 			}
 
-			System.out.println("");
-			System.out.println("*********************************************************************");
-			//-----------------------Cardid-----------------------------------------------------------------	
-			Set<Integer> ID = new HashSet<Integer>();
+			try (Connection connection = DriverManager.getConnection(url, username, password);
+					PreparedStatement checkStatement = connection
+							.prepareStatement("SELECT COUNT(*) FROM bankinfo WHERE fullname = ? OR password = ?");
+					PreparedStatement statement = connection
+							.prepareStatement("INSERT INTO bankinfo(fullname,email,password,basicprice) VALUES (?,?,?,?)")) {
 
-			Random ids = new Random();
 
-			int id_2 = 15;
 
-			int id;
+				System.out.println("Please Enter Your Fullname:");
+				String fullname = name.nextLine();
 
-			do {
-				id = ids.nextInt(id_2);
+				System.out.println("Enter Your Email:");
+				String email = name.nextLine();
 
-			} while (ID.contains(ids));
+				System.out.println("Enter Password:");
+				int pasword = name.nextInt();
 
-			ID.add(id);
+                System.out.println("You Should Deposet Some Money On Your Account For Create ");
+                int basic = Number.nextInt();
 
-			String id_1 = Integer.toString(id);
+				checkStatement.setString(1, fullname);
+				checkStatement.setString(2, password);
 
-			File filev = new File("C:\\Users\\user\\Desktop\\java file\\price.txt");
-			FileWriter writev = new FileWriter(filev, true);
-			PrintWriter prntv = new PrintWriter(writev);
-			prntv.println(id_1);
-			prntv.close();
+				ResultSet resulte = checkStatement.executeQuery();
 
-			System.out.println("Your ID is:"+id_1);
+				resulte.next();
 
-			//------------------------------------------password-----------------------------------------------------------------
-			System.out.println(
-					"*****************************************************************************************************************");
-			System.out.println("");
-			System.out.println("Enter your password:");
+				int count = resulte.getInt(1);
 
-			File passwrod = new File("C:\\Users\\user\\Desktop\\password.txt");
-
-			BufferedReader readers = new BufferedReader(new FileReader(passwrod));
-			String lines;
-			Boolean founds = false;
-
-			while ((lines = readers.readLine()) != null) {
-
-				String passwords = password.nextLine();
-				if (!founds) {
-					FileWriter writer = new FileWriter(passwrod, true);
-					PrintWriter printt = new PrintWriter(writer);
-					printt.println(passwords);
-					printt.close();
-
+				if (count > 0) {
+					System.out.println("Fullname or Password already exists.");
+					return; // Stop execution if fullname or password is repeated
 				}
 
-				System.out.println("Confirm your password:");
-				String confirmpassword = password.nextLine();
-
-				if (passwords.equals(confirmpassword)) {
-
-					System.out.println("Your Account Ready!");
-					System.out.println("***********************");
-					System.out.println("Rest Program!!");
-					break;
-
-				} else if (!passwords.equals(confirmpassword)) {
-					System.out.println("Password Not Same, Please Try Again");
-
-				}
-			}
-			System.out.println("");
-
-			//------------------------------------------basic price-----------------------------------------------------------------
-			
-			File Mn = new File("C:\\Users\\user\\Desktop\\java file\\taman.txt");
-			FileWriter tira = new FileWriter(Mn, true);
-			PrintWriter prints = new PrintWriter(tira);
-			int pric_basic = 0;
-
-			prints.println(pric_basic);
-			prints.close();
-
-			System.out.println("Your price is:"+pric_basic);
-
-			System.out.println(
-					"*****************************************************************************************************************");
-			System.out.println("");
+				statement.setString(1, fullname);
+				statement.setString(2, email);
+                statement.setInt(3, pasword);
+                statement.setInt(4, basic);
+                statement.executeUpdate();
 
 
-		}
-		//-------------------------------------------------------------------------------------------------
 
-		if(choise == 2) {
 
-				System.out.println("Enter Username:");
+              
 
-				File nameN = new File("C:\\Users\\user\\Desktop\\fullname.txt");
-		
-				try (BufferedReader readN = new BufferedReader(new FileReader(nameN))) {
-		
-					String usern = userN.nextLine();
-					String lineN;
-					Boolean foundN = false;
-		
-					while ((lineN = readN.readLine()) != null) {
-		
-						if (lineN.equals(usern)) {
-							foundN = true;
-							break;
-						}
-					}
-		
-					if (foundN) {
-						System.out.println("");
+
+				String checkid = "SELECT id FROM bankinfo WHERE fullname = ?";
+				String fullname1 = fullname;
+				try {
+					PreparedStatement chek = connection.prepareStatement(checkid);
+					chek.setString(1, fullname1);
+				
+					ResultSet rust = chek.executeQuery();
+				
+					if (rust.next()) {
+						int id = rust.getInt("id");
+						System.out.println("ID: " + id);
 					} else {
-						System.out.println("Username Not Found. Please Try Again!");
-						return;
+						System.out.println("This ID does not exist.");
 					}
-		
-				} catch (IOException e) {
-					System.out.println("Error reading file: " + e.getMessage());
-				}
-
-				System.out.println("******************");
-
-				System.out.println("");
-				System.out.println("Enter your Password:");
-				List<String> pasword = Files.readAllLines(Paths.get("C:\\Users\\user\\Desktop\\password.txt"));
-				String passwords = password.nextLine();
-				int N1 = Integer.parseInt(passwords);
-				for (String line : pasword) {
-					int N2 = Integer.parseInt(line);
-					if (N2 == N1) {
-						System.out.println("Welcome on Your Account");
-						break;
-					} else if (N2 != N1) {
-						System.out.println("Your Password Not Correct! Please Try Again");
-						break;
-					}
-
+				
+				} catch (SQLException e) {
+					e.printStackTrace();
 				}
 				
-				Scanner scanner = new Scanner(System.in);
 
-        account bAccount;
+				int rowsAffected = statement.executeUpdate();
+				if (rowsAffected > 0) {
+					System.out.println("You Can Now Log In");
+				} else {
+					System.out.println("Info Not Correct !!");
+				}
 
-        System.out.println("Enter initial balance:");
-        double intialbalance = scanner.nextDouble();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 
-        File flos = new File("C:\\Users\\user\\Desktop\\java file\\taman.txt");
-        if (flos.exists()) {
-            bAccount = loadAccount(intialbalance);
-        } else {
-            bAccount = new account(intialbalance);
-        }
-        while (true) {
-            System.out.println("1.Deposit");
-            System.out.println("2.Whitdraw");
-            System.out.println("3.check balance");
-            System.out.println("4.Exite");
-            System.out.println("Enter your choise");
-            int choiss = scanner.nextInt();
-            switch (choiss) {
-                case 1:
-                    System.out.println("Enter deposit Amount :");
-                    double DM = scanner.nextDouble();
-                    bAccount.Deposite(DM);
-                    saveTransaction("Deposite", DM);
-                    break;
-                case 2:
-                    System.out.println("Enter Whitdraw Amount :");
-                    double WM = scanner.nextDouble();
-                    bAccount.withdraw(WM);
-                    saveTransaction("withdraw", WM);
-                    break;
-                case 3:
-                    System.out.println("Current balance:" + bAccount.getbalance());
-                    break;
-                case 4:
-                    saveAccount(bAccount);
-                    System.out.println("Exting");
-                default:
-                    System.out.println("Invalid choise");
+		}
+
+
+		System.out.println("");
+		System.out.println("*********************************************************************");
+
+
+
+
+
+
+
+
+	//-------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+	if(choise==2)
+
+	{
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		try (Connection connection = DriverManager.getConnection(url, username, password);
+        PreparedStatement checkStatement1 = connection.prepareStatement("SELECT COUNT(*) FROM bankinfo WHERE fullname = ? AND password = ?");
+        java.sql.Statement statement1 = connection.createStatement();) {
+
+    System.out.println("Enter Username:");
+    String name1 = name.nextLine();
+    System.out.println("Enter Password:");
+    int passwordd = name.nextInt();
+
+    checkStatement1.setString(1, name1);
+    checkStatement1.setInt(2, passwordd);
+
+    ResultSet resulte1 = checkStatement1.executeQuery();
+
+    if (resulte1.next()) {
+        int count = resulte1.getInt(1);
+
+        if (count > 0) {
+            System.out.println("Welcome");
+            System.out.println("");
+
+
+			System.out.println("Enter Your ID:");
+			int N1 = name.nextInt();
+
+            String checkprice = "SELECT basicprice FROM bankinfo WHERE id = ?";
+            PreparedStatement chek = connection.prepareStatement(checkprice);
+			chek.setInt(1, N1);
+			
+            String updateSql = "UPDATE bankinfo SET basicprice = ? WHERE id = ?";
+            PreparedStatement updateStatement = connection.prepareStatement(updateSql);
+            updateStatement.setInt(2, N1);
+
+			
+            
+			ResultSet resultSetm = chek.executeQuery();
+			int n1 = N1;
+			
+			
+
+			
+
+            if (resultSetm.next()) {
+                int price = resultSetm.getInt("basicprice");
+
+                if (price == 0) {
+                    System.out.println("Your Account has 0$ ");
+                    System.out.println("");
+                    System.out.println("You Should Deposit Money");
+                    System.out.println("");
+                    int money = name.nextInt();
+
+                    updateStatement.setInt(1, money);
+                    updateStatement.setInt(2, n1);
+                    updateStatement.executeUpdate();
+
+                    
+                        System.out.println("Your price is: " + price);
+                    
+                    resultSetm.close();
+
+                    return;
+
+                } else if (price > 0) {
+
+                    System.out.println("1-Withdraw ");
+                    System.out.println("");
+                    System.out.println("2-Wallet ");
+					System.out.println("");
+					System.out.println("3-Deposet");
+
+                    Integer choises = name.nextInt();
+                    if (choises == 1) {
+                        System.out.println("Enter Price You Want to Withdraw");
+                        int N2 = name.nextInt();
+                        if (price >= N2) {
+                            int n3 = price - N2;
+                            updateStatement.setInt(1, n3);
+                            updateStatement.setInt(2, N1);
+                            updateStatement.executeUpdate();
+                        } else {
+                            System.out.println("You Don't Have Enough Money To Withdraw");
+                            return;
+                        }
+
+					} else if (choises == 2) {
+						
+						
+							
+                            System.out.println("");
+							System.out.println("Your price is: " + price);
+                        
+							resultSetm.close();
+							return;
+						
+                        
+                    } else if(choises == 3) {
+						System.out.println("Enter How Much You Want Deposet :");
+						int money = name.nextInt();
+
+						updateStatement.setInt(1, money);
+						updateStatement.setInt(2, n1);
+						updateStatement.executeUpdate();
+
+                        return;
+                    }
+                }else if (price < 0) {
+					System.out.println("Your Account had - ");
+					System.out.println("");
+					System.out.println("1-Deposet");
+					System.out.println("2-Wallet ");
+                    System.out.println("");
+
+					Integer choises1 = name.nextInt();
+					if (choises1 == 1) {
+						System.out.println("");
+						System.out.println("You Should Deposit Money");
+						System.out.println("");
+						int money = name.nextInt();
+
+						updateStatement.setInt(1, money);
+						updateStatement.setInt(2, n1);
+						updateStatement.executeUpdate();
+					} else if (choises1 == 2) {
+						
+                        System.out.println("Your price is: " + price);
+                    
+                    resultSetm.close();
+
+                    return;
+				}
+                }
             }
-            System.out.println();
         }
-
     }
-	//System.out.println(aBnk);
-
+} catch (Exception e) {
+    e.printStackTrace();
 }
 
-	private static void saveAccount(account bAccount) {
-		try (BufferedWriter writ = new BufferedWriter(
-				new FileWriter("C:\\Users\\user\\Desktop\\java file\\taman.txt", true))) {
-			writ.write("Balance" + bAccount.getbalance());
-			writ.newLine();
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			System.out.println("Error saving account: " + e.getMessage());
-		}
+		
+		
+
 	}
-
-	private static void saveTransaction(String transactionType , double amount) {
-		try (BufferedWriter writ = new BufferedWriter(
-				new FileWriter("C:\\Users\\user\\Desktop\\java file\\taman.txt", true))) {
-			writ.write(transactionType + "," + amount);
-			writ.newLine();
-
-		} catch (Exception e) {
-			// TODO: handle exception
-			System.out.println("Error saving");
-		}
-	}
-
-	private static account loadAccount(double intialbalance) {
-		try (BufferedReader reads = new BufferedReader(
-				new FileReader("C:\\Users\\user\\Desktop\\java file\\taman.txt"))) {
-			String line;
-			while ((line = reads.readLine()) != null) {
-				String[] parts = line.split(",");
-				String transactionType = parts[0];
-				double amount = Double.parseDouble(parts[1]);
-
-				if (transactionType.equals("Deposite")) {
-					intialbalance += amount;
-
-				} else if (transactionType.equals("withdraw")) {
-					intialbalance -= amount;
-
-				}
-			}
-		} catch (Exception e) {
-			// TODO: handle exception
-			System.out.println("Error loading account: " + e.getMessage());
-		}
-		return new account(intialbalance);
 	}
 
 }
